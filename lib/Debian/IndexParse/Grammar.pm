@@ -8,23 +8,16 @@ grammar Debian::IndexParse::Grammar {
         # The ordering of the paragraphs in control files is significant
         ^
           <emptyline>*
-          <paragraph>
-          [  <emptyline>+ <paragraph> ]*
-          <emptyline>*
+          <paragraph>+ %% <emptyline>+
         $
-        { my @list = map -> $p { $p.made }, $/<paragraph>;
-          make @list;
-        }
+        { make map { .made }, $/<paragraph>; }
     }
     token emptyline {
         \n
     }
     token paragraph {
         <field>+
-        { my %a;
-          for $/<field> -> $f { %a{$f<name>} = $f<value> };
-          make %a;
-        }
+        { make %( map { .<name>.Str => .<value>.Str }, $/<field>) }
     }
     token field {
         <name> \s* ":" \s* <value> "\n"
@@ -43,9 +36,9 @@ grammar Debian::IndexParse::Grammar {
           \[ \\ \] ^ _ ` { | } ~]>*
     }
     token value {
-        <-[\n]>+ <continuationline>?
+        <-[\n]>+ <continuationline>*
     }
     token continuationline {
-        \n [" " || \t] <value>
+        \n <[\  \t]> <-[\n]>*
     }
 }
