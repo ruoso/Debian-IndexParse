@@ -10,14 +10,16 @@ grammar Debian::IndexParse::Grammar {
           <emptyline>*
           <paragraph>+ %% <emptyline>+
         $
-        { make map { .made }, $/<paragraph>; }
+        { make map
+            { %( map { .<name>.Str => .<value>.Str }, .<field> ) },
+              $/<paragraph>
+        }
     }
     token emptyline {
         \n
     }
     token paragraph {
         <field>+
-        { make %( map { .<name>.Str => .<value>.Str }, $/<field>) }
     }
     token field {
         <name> \s* ":" \s* <value> "\n"
